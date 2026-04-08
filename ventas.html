@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Ventas y Caja</title>
+    <style>
+        :root { --primary: #e65100; --bg: #f4f6f8; --text: #333; --success: #2e7d32; --danger: #e53935; --dark: #1a1a1a;}
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: #f4f6f8; color: #333; display: none; }
+        
+        header { background-color: #000; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary);}
+        header h1 { margin: 0; font-size: 1.5em; color: var(--primary); text-transform: uppercase; }
+        .nav-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;}
+        .btn-navegar { background: #333; border: 1px solid #444; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; transition: 0.2s; font-size: 0.9em;}
+        .btn-navegar:hover { background: #555; }
+        .btn-navegar.active { background: var(--primary); border-color: var(--primary); pointer-events: none;}
+        .btn-salir { background: rgba(255,255,255,0.1); border: 1px solid #555; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+        #vista-caja-cerrada { display: none; text-align: center; margin-top: 50px; background: white; padding: 40px 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
+        .input-caja { font-size: 2em; padding: 10px; width: 150px; text-align: center; border: 2px solid #ccc; border-radius: 8px; font-weight: bold; margin-bottom: 10px;}
+        .btn-abrir-caja { background: var(--success); color: white; border: none; padding: 15px 30px; font-size: 1.5em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 10px rgba(46,125,50,0.3);}
+        .box-dia-auto { background: #fff3e0; color: var(--primary); border: 2px dashed #ffb74d; padding: 10px 20px; border-radius: 8px; font-size: 1.5em; font-weight: 900; display: inline-block; margin-bottom: 25px; text-transform: uppercase;}
+
+        #vista-dashboard { display: none; }
+        
+        .corte-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; border-left: 5px solid var(--success); box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
+        .btn-corte { background: var(--danger); color: white; border: none; padding: 10px 20px; font-weight: bold; font-size: 1.1em; border-radius: 6px; cursor: pointer;}
+        .btn-corte:active { transform: scale(0.95); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #ddd;}
+        .stat-card h3 { margin: 0; color: #777; font-size: 1em; text-transform: uppercase; }
+        .stat-value { font-size: 2.5em; font-weight: 900; color: #222; margin: 10px 0; }
+        .stat-card.caja { border-color: var(--success); }
+        .stat-card.caja .stat-value { color: var(--success); }
+
+        /* NAVEGADOR DEL TIEMPO (HISTORIAL) */
+        .filtros-historial { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .btn-filtro { background: white; border: 2px solid #ddd; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; color: #555; transition: 0.2s;}
+        .btn-filtro.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 6px rgba(230,81,0,0.3);}
+        
+        .nav-fechas { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .btn-nav-fecha { background: #eee; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; color: #333; transition: 0.2s;}
+        .btn-nav-fecha:hover { background: #ddd; }
+        .btn-nav-fecha:disabled { opacity: 0.3; cursor: not-allowed; }
+        .txt-rango-fecha { font-size: 1.2em; font-weight: 900; color: var(--primary); min-width: 250px; text-align: center; text-transform: capitalize;}
+
+        .tabla-productos { width: 100%; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-collapse: collapse; margin-bottom: 15px;}
+        .tabla-productos th, .tabla-productos td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        .tabla-productos th { background: #fafafa; color: #555; font-weight: bold; text-transform: uppercase; font-size: 0.9em; }
+        .col-cant { font-weight: 900; color: var(--primary); width: 80px; text-align: center !important;}
+        
+        .paginacion { display: flex; justify-content: center; gap: 15px; align-items: center; margin-bottom: 30px;}
+        .btn-pag { background: #fff; border: 1px solid #ccc; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+        .btn-pag:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .footer-total { background: #222; color: white; padding: 20px; text-align: right; border-radius: 12px; font-size: 1.5em; font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
+
+        /* MODALES PERSONALIZADOS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: white; color: #333; width: 90%; max-width: 400px; border-radius: 12px; padding: 25px; box-sizing: border-box; text-align: center;}
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .btn-mitad { flex: 1; padding: 12px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; flex-direction: column;">
+            <h1> Control de Caja</h1>
+            <div class="nav-bar">
+                <a href="administrador.html" class="btn-navegar">📝 Editar Menú</a>
+                <a href="ordenes.html" class="btn-navegar">👨‍🍳 Órdenes y Caja</a>
+                <a href="ventas.html" class="btn-navegar active">📊 Reporte de Ventas</a>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap: 15px; flex-wrap: wrap; justify-content: flex-end;">
+            <button class="btn-salir" id="btn-cerrar-sesion">Salir</button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div id="vista-caja-cerrada">
+            <h1 style="color:var(--danger); margin-top:0;">CAJA CERRADA</h1>
+            <p style="font-size: 1.2em; color: #666; margin-bottom: 20px;">Inicia el turno para poder procesar pagos en la caja.</p>
+            
+            <div style="margin-bottom: 10px; font-weight: bold; color:#888; font-size: 0.9em;">Día detectado por el sistema:</div>
+            <div class="box-dia-auto" id="txt-dia-auto">Cargando día...</div>
+            
+            <div style="display:flex; justify-content:center; gap: 40px; flex-wrap: wrap;">
+                <div>
+                    <div style="font-weight:bold; color:#888; margin-bottom:5px;">Fondo de Cambio Inicial:</div>
+                    <span style="font-size:2em; font-weight:bold; color:#ccc;">$</span> <input type="number" id="input-fondo" class="input-caja" value="500">
+                </div>
+                <div>
+                    <div style="font-weight:bold; color:#888; margin-bottom:5px;">Límite de Seguridad:</div>
+                    <span style="font-size:2em; font-weight:bold; color:#ccc;">$</span> <input type="number" id="input-limite" class="input-caja" value="5000">
+                </div>
+            </div>
+
+            <button class="btn-abrir-caja" onclick="abrirTurno()">🔓 INICIAR TURNO</button>
+        </div>
+
+        <div id="vista-dashboard">
+            
+            <div class="corte-header">
+                <div>
+                    <h2 style="margin:0; color:var(--success);">Turno Activo</h2>
+                    <div style="color:#777; font-size:0.9em; margin-top:5px;" id="txt-fecha-apertura">Abierto: --:--</div>
+                </div>
+                <button class="btn-corte" onclick="hacerCorteDeCaja()">🔒 Hacer Corte y Cerrar Turno</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Ventas del Turno</h3>
+                    <div class="stat-value" id="txt-ventas-turno">$0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Fondo de Cambio</h3>
+                    <div class="stat-value" id="txt-fondo-fijo" style="color:#555;">$0</div>
+                </div>
+                <div class="stat-card caja">
+                    <h3>Efectivo Físico en Caja</h3>
+                    <div class="stat-value" id="txt-efectivo-real">$0</div>
+                    <div style="font-size:0.85em; color:#888;">(Incluye Fondo + Ventas - Retiros)</div>
+                </div>
+            </div>
+
+            <h2 style="color:var(--primary); border-bottom:2px solid #ccc; padding-bottom:5px; margin-top: 40px; text-align: center;">📊 Máquina del Tiempo de Ventas</h2>
+            
+            <div class="filtros-historial">
+                <button class="btn-filtro active" id="btn-filtro-dia" onclick="cambiarFiltro('dia')">Por Día</button>
+                <button class="btn-filtro" id="btn-filtro-semana" onclick="cambiarFiltro('semana')">Por Semana</button>
+                <button class="btn-filtro" id="btn-filtro-mes" onclick="cambiarFiltro('mes')">Por Mes</button>
+            </div>
+
+            <div class="nav-fechas">
+                <button class="btn-nav-fecha" onclick="cambiarFecha(-1)">◀ Ver Pasado</button>
+                <div class="txt-rango-fecha" id="txt-rango-fecha">Hoy</div>
+                <button class="btn-nav-fecha" id="btn-nav-next" onclick="cambiarFecha(1)" disabled>Ver Reciente ▶</button>
+            </div>
+
+            <table class="tabla-productos">
+                <thead><tr><th class="col-cant">Cant</th><th>Producto Vendido</th></tr></thead>
+                <tbody id="lista-productos-historial">
+                    <tr><td colspan="2" style="text-align:center;">Cargando historial...</td></tr>
+                </tbody>
+            </table>
+
+            <div class="paginacion">
+                <button class="btn-pag" id="btn-prev" onclick="cambiarPagina(-1)">◀ Anterior</button>
+                <span style="font-weight:bold; color:#666;" id="txt-paginacion">Pág 1</span>
+                <button class="btn-pag" id="btn-next" onclick="cambiarPagina(1)">Siguiente ▶</button>
+            </div>
+
+            <div class="footer-total">
+                <span style="font-size:0.6em; color:#aaa; font-weight:normal; text-transform:uppercase;">Ganancia en este periodo:</span>
+                <span style="color:var(--success);" id="txt-total-historico">$0.00</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modal-alerta" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 350px; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <div id="alerta-icono" style="font-size: 4em; margin-bottom: 5px;">⚠️</div>
+            <h2 id="alerta-titulo" style="margin-top: 0; color: #222;">Título</h2>
+            <p id="alerta-mensaje" style="color: #666; font-size: 1.1em; line-height: 1.4; margin-bottom: 25px;">Mensaje</p>
+            <div id="alerta-botones" style="display: flex; gap: 10px;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, onSnapshot, doc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAc_eCxcvIJKFclNMApr9_fVDCDLShTLK8",
+            authDomain: "menu-pho88-demo.firebaseapp.com",
+            projectId: "menu-pho88-demo",
+            storageBucket: "menu-pho88-demo.firebasestorage.app",
+            messagingSenderId: "100888777359",
+            appId: "1:100888777359:web:5f2946bebba884858216fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- SISTEMA DE DIÁLOGOS BONITOS ---
+        window.mostrarAlerta = (titulo, mensaje, icono = 'ℹ️') => {
+            return new Promise((resolve) => {
+                document.getElementById('alerta-icono').innerText = icono;
+                document.getElementById('alerta-titulo').innerText = titulo;
+                document.getElementById('alerta-mensaje').innerText = mensaje;
+                document.getElementById('alerta-botones').innerHTML = `<button class="btn-mitad" style="background:var(--primary); color:white;" id="btn-alerta-ok">Aceptar</button>`;
+                document.getElementById('modal-alerta').style.display = 'flex';
+                document.getElementById('btn-alerta-ok').onclick = () => { document.getElementById('modal-alerta').style.display = 'none'; resolve(true); };
+            });
+        };
+
+        window.mostrarConfirmacion = (titulo, mensaje, txtBtn = "Aceptar", icono = '❓', color = "var(--primary)") => {
+            return new Promise((resolve) => {
+                document.getElementById('alerta-icono').innerText = icono;
+                document.getElementById('alerta-titulo').innerText = titulo;
+                document.getElementById('alerta-mensaje').innerHTML = mensaje; // Usamos innerHTML para permitir negritas
+                document.getElementById('alerta-botones').innerHTML = `
+                    <button class="btn-mitad" style="background:#eee; color:#555;" id="btn-alerta-cancelar">Cancelar</button>
+                    <button class="btn-mitad" style="background:${color}; color:white;" id="btn-alerta-confirmar">${txtBtn}</button>
+                `;
+                document.getElementById('modal-alerta').style.display = 'flex';
+                document.getElementById('btn-alerta-cancelar').onclick = () => { document.getElementById('modal-alerta').style.display = 'none'; resolve(false); };
+                document.getElementById('btn-alerta-confirmar').onclick = () => { document.getElementById('modal-alerta').style.display = 'none'; resolve(true); };
+            });
+        };
+
+        // --- SISTEMA DE DÍA AUTOMÁTICO ---
+        const nombresDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const diaActualDeteccion = nombresDias[new Date().getDay()];
+        document.getElementById('txt-dia-auto').innerText = diaActualDeteccion;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { document.body.style.display = "block"; inicializarPanel(); } 
+            else { window.location.href = "index.html"; }
+        });
+        document.getElementById('btn-cerrar-sesion').onclick = () => signOut(auth);
+
+        const docCaja = doc(db, "configuracion", "caja");
+        let cajaActual = {};
+
+        function inicializarPanel() {
+            onSnapshot(docCaja, (docSnap) => {
+                if (docSnap.exists()) {
+                    cajaActual = docSnap.data();
+                    if(cajaActual.estado === 'abierta') {
+                        document.getElementById('vista-caja-cerrada').style.display = 'none';
+                        document.getElementById('vista-dashboard').style.display = 'block';
+                        
+                        document.getElementById('txt-ventas-turno').innerText = `$${(cajaActual.ventasTurno||0).toFixed(2)}`;
+                        document.getElementById('txt-fondo-fijo').innerText = `$${(cajaActual.fondo||0).toFixed(2)}`;
+                        document.getElementById('txt-efectivo-real').innerText = `$${(cajaActual.efectivoActual||0).toFixed(2)}`;
+                        
+                        let d = cajaActual.fechaApertura ? cajaActual.fechaApertura.toDate() : new Date();
+                        document.getElementById('txt-fecha-apertura').innerText = `Abierto el: ${cajaActual.diaSemana || 'Día'} a las ${d.toLocaleTimeString()}`;
+                        
+                        if(!todasLasVentasCargadas) cargarHistorialVentas(); 
+                    } else {
+                        document.getElementById('vista-caja-cerrada').style.display = 'block';
+                        document.getElementById('vista-dashboard').style.display = 'none';
+                    }
+                } else {
+                    setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 5000, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0 });
+                }
+            });
+        }
+
+        window.abrirTurno = async () => {
+            let fondo = parseFloat(document.getElementById('input-fondo').value) || 0;
+            let limite = parseFloat(document.getElementById('input-limite').value) || 5000;
+            
+            const conf = await mostrarConfirmacion("¿Iniciar Turno?", `Iniciando turno para el día <b>${diaActualDeteccion}</b>.<br><br>Fondo de caja: $${fondo}<br>Límite: $${limite}`, "Abrir Caja", "🔓", "var(--success)");
+            if(conf) {
+                try {
+                    await setDoc(docCaja, {
+                        estado: 'abierta',
+                        diaSemana: diaActualDeteccion, // GUARDADO AUTOMÁTICO
+                        fondo: fondo,
+                        limite: limite,
+                        efectivoActual: fondo, 
+                        ventasTurno: 0,
+                        retirosTurno: 0,
+                        fechaApertura: serverTimestamp()
+                    });
+                } catch(e) { await mostrarAlerta("Error", "No se pudo abrir el turno.", "❌"); }
+            }
+        };
+
+        window.hacerCorteDeCaja = async () => {
+            const mensaje = `Ventas del turno: <b>$${cajaActual.ventasTurno.toFixed(2)}</b><br>Efectivo esperado: <b>$${cajaActual.efectivoActual.toFixed(2)}</b><br><br>¿Realizar el corte y cerrar la caja?`;
+            const conf = await mostrarConfirmacion("Corte de Caja", mensaje, "Sí, Cerrar Caja", "🔒", "var(--danger)");
+
+            if(conf) {
+                try {
+                    await addDoc(collection(db, "cortes_caja"), {
+                        diaSemana: cajaActual.diaSemana || 'Desconocido',
+                        ventas: cajaActual.ventasTurno,
+                        efectivoFinal: cajaActual.efectivoActual,
+                        fondo: cajaActual.fondo,
+                        retiros: cajaActual.retirosTurno,
+                        fechaCierre: serverTimestamp()
+                    });
+                    
+                    await setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 5000, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0 });
+                    await mostrarAlerta("Corte Exitoso", "Retira todo el dinero. El sistema está bloqueado hasta el siguiente turno.", "✅");
+                } catch(e) { await mostrarAlerta("Error", "No se pudo hacer el corte.", "❌"); }
+            }
+        };
+
+        // --- SISTEMA DEL NAVEGADOR DEL TIEMPO ---
+        let todasLasVentasCargadas = false;
+        let ventasData = [];
+        let productosAgrupadosGlobal = [];
+        
+        let filtroTipo = 'dia'; 
+        let offsetFecha = 0; // 0 = Actual, -1 = Pasado, etc.
+        let paginaActual = 1;
+        const itemsPorPagina = 10;
+
+        async function cargarHistorialVentas() {
+            todasLasVentasCargadas = true;
+            document.getElementById('lista-productos-historial').innerHTML = '<tr><td colspan="2" style="text-align:center;">Analizando base de datos en la nube...</td></tr>';
+            
+            try {
+                const q = query(collection(db, "ordenes"), where("estado", "==", "pagada"));
+                const querySnapshot = await getDocs(q);
+                
+                ventasData = [];
+                querySnapshot.forEach((doc) => {
+                    let d = doc.data();
+                    if(d.fechaPago) ventasData.push(d); 
+                });
+                
+                aplicarFiltroInteligente();
+            } catch(e) {
+                console.error(e);
+                document.getElementById('lista-productos-historial').innerHTML = '<tr><td colspan="2" style="text-align:center; color:red;">Error al cargar historial.</td></tr>';
+            }
+        }
+
+        window.cambiarFiltro = (tipo) => {
+            document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-filtro-' + tipo).classList.add('active');
+            filtroTipo = tipo;
+            offsetFecha = 0; // Al cambiar pestaña, volvemos al presente
+            aplicarFiltroInteligente();
+        }
+
+        window.cambiarFecha = (delta) => {
+            offsetFecha += delta;
+            if(offsetFecha > 0) offsetFecha = 0; // No podemos ver el futuro
+            aplicarFiltroInteligente();
+        }
+
+        function aplicarFiltroInteligente() {
+            document.getElementById('btn-nav-next').disabled = (offsetFecha === 0);
+
+            let fechaInicio = new Date();
+            let fechaFin = new Date();
+            let textoRango = "";
+
+            if (filtroTipo === 'dia') {
+                fechaInicio.setDate(fechaInicio.getDate() + offsetFecha);
+                fechaInicio.setHours(0,0,0,0);
+                fechaFin = new Date(fechaInicio);
+                fechaFin.setHours(23,59,59,999);
+
+                if (offsetFecha === 0) textoRango = `Hoy (${nombresDias[fechaInicio.getDay()]})`;
+                else if (offsetFecha === -1) textoRango = `Ayer (${nombresDias[fechaInicio.getDay()]})`;
+                else textoRango = `${nombresDias[fechaInicio.getDay()]} ${fechaInicio.getDate()} ${nombresMeses[fechaInicio.getMonth()]}`;
+            } 
+            else if (filtroTipo === 'semana') {
+                // Ir al lunes de la semana actual
+                let day = fechaInicio.getDay() || 7; 
+                fechaInicio.setDate(fechaInicio.getDate() - day + 1 + (offsetFecha * 7));
+                fechaInicio.setHours(0,0,0,0);
+                
+                fechaFin = new Date(fechaInicio);
+                fechaFin.setDate(fechaInicio.getDate() + 6); // Hasta el domingo
+                fechaFin.setHours(23,59,59,999);
+
+                textoRango = `${fechaInicio.getDate()} ${nombresMeses[fechaInicio.getMonth()]} - ${fechaFin.getDate()} ${nombresMeses[fechaFin.getMonth()]}`;
+                if(offsetFecha === 0) textoRango = "Esta Semana (" + textoRango + ")";
+                else if(offsetFecha === -1) textoRango = "Semana Pasada";
+            }
+            else if (filtroTipo === 'mes') {
+                fechaInicio.setMonth(fechaInicio.getMonth() + offsetFecha, 1);
+                fechaInicio.setHours(0,0,0,0);
+                
+                fechaFin = new Date(fechaInicio);
+                fechaFin.setMonth(fechaInicio.getMonth() + 1, 0); // Último día del mes
+                fechaFin.setHours(23,59,59,999);
+
+                textoRango = `${nombresMeses[fechaInicio.getMonth()]} ${fechaInicio.getFullYear()}`;
+                if(offsetFecha === 0) textoRango = "Este Mes (" + textoRango + ")";
+                else if(offsetFecha === -1) textoRango = "Mes Pasado (" + textoRango + ")";
+            }
+
+            document.getElementById('txt-rango-fecha').innerText = textoRango;
+
+            // Procesar los datos en el rango de fechas
+            let totalVendidoRango = 0;
+            let conteoProductos = {};
+
+            ventasData.forEach(orden => {
+                let fechaOrden = orden.fechaPago.toDate();
+                if(fechaOrden >= fechaInicio && fechaOrden <= fechaFin) {
+                    totalVendidoRango += parseFloat(orden.total || 0);
+                    if(orden.items) {
+                        orden.items.forEach(item => {
+                            let nombre = (item.categoria ? `${item.categoria} - ` : '') + item.nombre + (item.tamaño ? ` (${item.tamaño})` : '');
+                            conteoProductos[nombre] = (conteoProductos[nombre] || 0) + item.cantidad;
+                        });
+                    }
+                }
+            });
+
+            document.getElementById('txt-total-historico').innerText = `$${totalVendidoRango.toFixed(2)}`;
+
+            productosAgrupadosGlobal = [];
+            for(let nombre in conteoProductos) {
+                productosAgrupadosGlobal.push({ nombre: nombre, cant: conteoProductos[nombre] });
+            }
+            productosAgrupadosGlobal.sort((a, b) => b.cant - a.cant);
+
+            paginaActual = 1;
+            renderizarPagina();
+        }
+
+        function renderizarPagina() {
+            let inicio = (paginaActual - 1) * itemsPorPagina;
+            let fin = inicio + itemsPorPagina;
+            let productosMostrados = productosAgrupadosGlobal.slice(inicio, fin);
+
+            let html = '';
+            productosMostrados.forEach(p => {
+                html += `<tr><td class="col-cant">${p.cant}</td><td style="font-weight:bold; color:#444;">${p.nombre}</td></tr>`;
+            });
+
+            if(productosMostrados.length === 0) html = '<tr><td colspan="2" style="text-align:center;">No hay registros de venta en esta fecha.</td></tr>';
+            document.getElementById('lista-productos-historial').innerHTML = html;
+
+            document.getElementById('txt-paginacion').innerText = `Pág ${paginaActual}`;
+            document.getElementById('btn-prev').disabled = paginaActual === 1;
+            document.getElementById('btn-next').disabled = fin >= productosAgrupadosGlobal.length;
+        }
+
+        window.cambiarPagina = (delta) => {
+            paginaActual += delta;
+            renderizarPagina();
+        }
+    </script>
+</body>
+</html>
