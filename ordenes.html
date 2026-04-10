@@ -5,137 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Tickets Food Truck</title>
     <style>
-        :root { --primary: #e65100; --bg: #f4f6f8; --text: #333; --success: #2e7d32; --danger: #e53935; --dark: #1a1a1a;}
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--dark); color: #fff; display: none; }
+        :root { --primary: #e65100; --bg: #f4f6f8; --text: #333; --success: #2e7d32; --danger: #e53935; --dark: #121212; --dark-card: #1e1e1e;}
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--dark); color: #fff; display: none; padding-bottom: 50px;}
         
-        header { background-color: #000; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary);}
-        header h1 { margin: 0; font-size: 1.5em; color: var(--primary); text-transform: uppercase; }
-        .nav-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;}
-        .btn-navegar { background: #333; border: 1px solid #444; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; transition: 0.2s; font-size: 0.9em;}
-        .btn-navegar:hover { background: #555; }
-        .btn-navegar.active { background: var(--primary); border-color: var(--primary); pointer-events: none;}
-        .btn-salir { background: rgba(255,255,255,0.1); border: 1px solid #555; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        /* CABECERA UNIVERSAL */
+        header { background-color: #000; color: white; padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100;}
+        header h1 { margin: 0; font-size: 1.6em; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 900;}
         
-        .btn-estado { padding: 8px 15px; border-radius: 5px; font-weight: bold; border: none; color: white; cursor: pointer; font-size: 1em; box-shadow: 0 2px 5px rgba(0,0,0,0.5); transition: 0.2s; }
-        .reloj { font-size: 1.2em; font-weight: bold; color: #aaa;}
+        /* NAVEGACIÓN MODERNA */
+        .nav-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 15px;}
+        .btn-navegar { background: #222; border: 1px solid #333; color: #aaa; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; text-decoration: none; transition: all 0.2s ease; font-size: 0.95em; letter-spacing: 0.5px;}
+        .btn-navegar:hover { background: #333; color: white; border-color: #444;}
+        .btn-navegar.active { background: var(--primary); border-color: var(--primary); color: white; pointer-events: none; box-shadow: 0 4px 10px rgba(230, 81, 0, 0.3);}
+        
+        .btn-salir { background: transparent; border: 1px solid #555; color: #ccc; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .btn-salir:hover { background: rgba(255,255,255,0.1); color: white; border-color: white;}
+        
+        .btn-estado { padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; color: white; cursor: pointer; font-size: 0.95em; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s; letter-spacing: 0.5px;}
+        .reloj { font-size: 1.3em; font-weight: 900; color: #888; background: #111; padding: 8px 15px; border-radius: 8px; border: 1px solid #222;}
 
-        .tabs-container { display: flex; background: #222; border-bottom: 4px solid #333; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: transparent; color: #888; font-size: 1.2em; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s;}
-        .tab-btn.active { color: white; background: var(--primary); border-bottom: 4px solid #ff9800; }
+        /* TABS (PESTAÑAS) MODERNAS */
+        .tabs-container { display: flex; background: #1a1a1a; border-bottom: 1px solid #333; padding: 0 20px;}
+        .tab-btn { flex: 1; max-width: 300px; padding: 18px 20px; border: none; background: transparent; color: #666; font-size: 1.1em; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; border-bottom: 4px solid transparent; letter-spacing: 1px;}
+        .tab-btn:hover { color: #aaa; }
+        .tab-btn.active { color: white; border-bottom: 4px solid var(--primary); }
 
-        .tab-content { display: none; padding: 20px; }
+        .tab-content { display: none; padding: 25px; max-width: 1400px; margin: 0 auto;}
         .tab-content.active { display: block; }
 
-        #alerta-retiro-caja { display: none; background: var(--danger); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(229,57,53,0.4); border: 2px solid #ffcdd2; animation: parpadeo 2s infinite;}
-        @keyframes parpadeo { 0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.9; } }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .btn-retiro-alerta { background: white; color: var(--danger); font-weight: bold; font-size: 1.2em; border: none; padding: 12px 25px; border-radius: 8px; margin-top: 15px; cursor: pointer;}
-
-        .estado-bar { background: #333; padding: 10px 20px; text-align: center; font-weight: bold; color: #ccc; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between;}
-        .grid-tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        /* ALERTAS Y ESTADOS */
+        #alerta-retiro-caja { display: none; background: rgba(229, 57, 53, 0.1); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid var(--danger); animation: parpadeo 2s infinite;}
+        @keyframes parpadeo { 0% { box-shadow: 0 0 15px rgba(229,57,53,0.2); } 50% { box-shadow: 0 0 25px rgba(229,57,53,0.5); } 100% { box-shadow: 0 0 15px rgba(229,57,53,0.2); } }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         
-        .card { background: #fff; color: #222; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.3);}
-        .card-header { background: #ff9800; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .card-header.cocina-header { background: var(--danger); }
-        .card-mesa { font-size: 1.8em; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: -1px;}
-        .card-hora { font-size: 0.9em; font-weight: bold; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; }
-        .card-lista { padding: 15px; flex-grow: 1; border-bottom: 2px dashed #eee; max-height: 250px; overflow-y: auto;}
-        .item-pedido { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; font-size: 1.1em; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;}
-        .item-cant { font-weight: 900; color: var(--danger); width: 35px; flex-shrink: 0; font-size: 1.2em; }
-        .item-detalle { flex-grow: 1; font-weight: bold;}
-        .item-precio { color: var(--success); font-weight: bold;}
-        .item-tam { display: block; font-size: 0.8em; color: #777; font-weight: normal;}
-        
-        .card-footer { padding: 15px; background: #fafafa; display: flex; flex-direction: column; gap: 10px;}
-        .card-total { text-align: center; font-weight: 900; font-size: 1.8em; color: var(--success); padding: 10px 0;}
-        
-        .btn-accion { color: white; border: none; padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; transition: 0.2s;}
-        .btn-entregar { background: var(--success); }
-        .btn-cobrar { background: #222; border: 2px solid #444; }
-        .btn-borrar { background: #ffe0e0; color: var(--danger); border: 1px solid #ffb3b3; padding: 10px; font-weight: bold; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 0.9em;}
-        .btn-borrar:hover { background: var(--danger); color: white;}
+        .btn-retiro-alerta { background: var(--danger); color: white; font-weight: bold; font-size: 1.1em; border: none; padding: 12px 30px; border-radius: 8px; margin-top: 15px; cursor: pointer; transition: 0.2s;}
+        .btn-retiro-alerta:hover { background: #c62828; }
 
-        .sin-datos { text-align: center; color: #666; font-size: 1.5em; margin-top: 50px; grid-column: 1 / -1; }
+        .estado-bar { background: var(--dark-card); padding: 15px 25px; text-align: center; font-weight: bold; color: #aaa; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333;}
+        
+        /* TARJETAS DE TICKETS CAJA */
+        .grid-tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        
+        .card { background: #fff; color: #222; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: transform 0.2s, box-shadow 0.2s;}
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.4); }
+        
+        .card-header { background: #f57c00; color: white; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .card-header.cocina-header { background: #e53935; }
+        .card-mesa { font-size: 1.8em; font-weight: 900; margin: 0; letter-spacing: -1px;}
+        .card-hora { font-size: 0.85em; font-weight: bold; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px; letter-spacing: 0.5px;}
+        
+        .card-lista { padding: 20px; flex-grow: 1; border-bottom: 2px dashed #eee; max-height: 280px; overflow-y: auto;}
+        .item-pedido { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; font-size: 1.05em; border-bottom: 1px solid #f5f5f5; padding-bottom: 10px;}
+        .item-cant { font-weight: 900; color: var(--primary); width: 35px; flex-shrink: 0; font-size: 1.2em; }
+        .item-detalle { flex-grow: 1; font-weight: 600; color: #333;}
+        .item-precio { color: #555; font-weight: bold;}
+        .item-tam { display: block; font-size: 0.85em; color: #888; font-weight: normal; margin-top: 2px;}
+        
+        .card-footer { padding: 20px; background: #fafafa; display: flex; flex-direction: column; gap: 12px;}
+        .card-total { text-align: center; font-weight: 900; font-size: 1.8em; color: var(--success); padding: 5px 0 15px 0;}
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
-        .modal-content { background: white; color: #333; width: 90%; max-width: 400px; border-radius: 12px; padding: 25px; box-sizing: border-box; text-align: center;}
-        .cobro-input { width: 100%; padding: 15px; font-size: 1.8em; text-align: center; font-weight: bold; border: 2px solid #ccc; border-radius: 8px; margin: 15px 0; box-sizing: border-box;}
-        .cobro-cambio { font-size: 2.5em; font-weight: 900; color: #888; margin: 10px 0 20px 0;}
-        .btn-cancelar { background: #eee; color: #555; border: none; padding: 12px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px;}
+        /* ---- LÓGICA VISUAL KDS COCINA (COLA) ---- */
+        .card.main-order { grid-column: 1 / -1; border: 3px solid var(--danger); box-shadow: 0 10px 30px rgba(229,57,53,0.3); transform: scale(1.01); margin-bottom: 15px;}
+        .card.main-order .card-lista { max-height: 450px; }
+        
+        .card.compact-order { cursor: pointer; opacity: 0.9; transition: 0.2s; border: 1px solid #444; }
+        .card.compact-order .card-lista, .card.compact-order .card-footer { display: none; }
+        .card.compact-order .cocina-header { background: #333; color: #aaa; border-bottom: none;}
+        .card.compact-order:hover { opacity: 1; transform: translateY(-3px); border-color: #666;}
+        
+        .card.compact-order.expanded { grid-column: 1 / -1; opacity: 1; transform: scale(1); border: 2px solid var(--danger); box-shadow: 0 8px 20px rgba(229,57,53,0.2);}
+        .card.compact-order.expanded .card-lista { display: block; }
+        .card.compact-order.expanded .card-footer { display: flex; }
+        .card.compact-order.expanded .cocina-header { background: #e53935; color: white;}
+        /* ----------------------------------------- */
+        
+        /* BOTONES DE ACCIÓN */
+        .btn-accion { color: white; border: none; padding: 16px; font-size: 1.05em; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; transition: 0.2s; letter-spacing: 0.5px;}
+        .btn-entregar { background: var(--success); box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);}
+        .btn-entregar:active { transform: scale(0.98); background: #1b5e20;}
+        .btn-cobrar { background: #222; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+        .btn-cobrar:hover { background: #000; }
+        .btn-cobrar:active { transform: scale(0.98); }
+        
+        .btn-borrar { background: transparent; color: #999; border: 1px solid #ddd; padding: 12px; font-weight: bold; border-radius: 10px; cursor: pointer; text-align: center; font-size: 0.9em; transition: 0.2s;}
+        .btn-borrar:hover { background: #fff0f0; color: var(--danger); border-color: #ffcdd2;}
+
+        .sin-datos { text-align: center; color: #555; font-size: 1.5em; margin-top: 80px; grid-column: 1 / -1; font-weight: bold; }
+
+        /* MODALES PREMIUM */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: center; backdrop-filter: blur(4px);}
+        .modal-content { background: white; color: #333; width: 90%; max-width: 420px; border-radius: 16px; padding: 30px 25px; box-sizing: border-box; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+        
+        .cobro-input { width: 100%; padding: 18px; font-size: 2em; text-align: center; font-weight: bold; border: 2px solid #ddd; border-radius: 10px; margin: 20px 0; box-sizing: border-box; color: #222; outline: none; transition: 0.2s; background: #fafafa;}
+        .cobro-input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.1);}
+        .cobro-cambio { font-size: 2.8em; font-weight: 900; color: #aaa; margin: 10px 0 25px 0; letter-spacing: -1px;}
+        
+        .btn-cancelar { background: transparent; color: #888; border: none; padding: 15px; font-size: 1.05em; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 5px; transition: 0.2s;}
+        .btn-cancelar:hover { color: #555; background: #f5f5f5;}
         
         /* BOTONES DEL MODAL DE ALERTA */
-        .btn-mitad { flex: 1; padding: 12px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; }
+        .btn-mitad { flex: 1; padding: 14px; font-size: 1.05em; font-weight: bold; border-radius: 10px; cursor: pointer; border: none; transition: 0.2s;}
+        .btn-mitad:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
 
     <header>
         <div style="display: flex; flex-direction: column;">
-            <h1> Fast Food Tickets</h1>
+            <h1>Food Truck POS</h1>
             <div class="nav-bar">
-                <a href="administrador.html" class="btn-navegar">📝 Editar Menú</a>
-                <a href="ordenes.html" class="btn-navegar active">👨‍🍳 Órdenes y Caja</a>
-                <a href="ventas.html" class="btn-navegar">📊 Reporte de Ventas</a>
+                <a href="administrador.html" class="btn-navegar">Administrar Menú</a>
+                <a href="ordenes.html" class="btn-navegar active">Órdenes y Caja</a>
+                <a href="ventas.html" class="btn-navegar">Reporte de Ventas</a>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap: 15px; flex-wrap: wrap; justify-content: flex-end;">
-            <button id="btn-estado-tienda" class="btn-estado" style="background: gray;">Cargando...</button>
+            <button id="btn-estado-tienda" class="btn-estado" style="background: #555;">Cargando...</button>
             <div class="reloj" id="reloj">00:00:00</div>
-            <button class="btn-salir" id="btn-cerrar-sesion">Salir</button>
+            <button class="btn-salir" id="btn-cerrar-sesion">Cerrar Sesión</button>
         </div>
     </header>
 
     <div class="tabs-container">
-        <button class="tab-btn active" id="btn-caja" onclick="cambiarPestana('caja')">💵 Cobro en Caja</button>
-        <button class="tab-btn" id="btn-cocina" onclick="cambiarPestana('cocina')">👨‍🍳 Pedidos en Cocina</button>
+        <button class="tab-btn active" id="btn-caja" onclick="cambiarPestana('caja')">Cobro en Caja</button>
+        <button class="tab-btn" id="btn-cocina" onclick="cambiarPestana('cocina')">Pedidos en Cocina</button>
     </div>
 
     <div id="tab-caja" class="tab-content active">
         <div id="alerta-retiro-caja">
-            <h2 style="margin:0; font-size: 1.8em;">⚠️ ¡EXCESO DE EFECTIVO!</h2>
-            <p style="font-size: 1.2em; font-weight: bold; margin: 10px 0;">Tienes más recursos de lo permitido por seguridad.</p>
-            <p style="margin: 0; color: #fff;">Realiza un retiro de valores y deja únicamente el fondo de cambio en caja.</p>
+            <h2 style="margin:0; font-size: 1.8em;">¡ATENCIÓN! LÍMITE DE EFECTIVO</h2>
+            <p style="font-size: 1.1em; font-weight: bold; margin: 10px 0;">Por seguridad, tienes más recursos de lo permitido.</p>
+            <p style="margin: 0; color: #ccc;">Realiza un retiro de valores y deja únicamente el fondo de cambio en caja.</p>
             <button class="btn-retiro-alerta" id="btn-hacer-retiro" onclick="ejecutarRetiroAutomatico()">Retirar $0.00 ahora</button>
         </div>
 
         <div class="estado-bar">
             <span>Esperando Pago del Cliente</span>
-            <span style="color:var(--success);">Efectivo Actual: <span id="txt-efectivo-actual" style="color:white; font-size:1.2em;">$0</span></span>
+            <span style="color:#aaa;">Efectivo Actual: <span id="txt-efectivo-actual" style="color:var(--success); font-size:1.3em;">$0</span></span>
         </div>
         <div class="grid-tarjetas" id="contenedor-caja"></div>
     </div>
 
     <div id="tab-cocina" class="tab-content">
         <div class="estado-bar">
-            <span>Tickets Pagados en Preparación</span>
-            <span style="color:var(--primary);">Pendientes: <span id="contador-cocina" style="color:white; font-size:1.2em;">0</span></span>
+            <span>Control de Cola de Preparación</span>
+            <span style="color:#aaa;">Órdenes Pendientes: <span id="contador-cocina" style="color:var(--primary); font-size:1.3em;">0</span></span>
         </div>
         <div class="grid-tarjetas" id="contenedor-cocina"></div>
     </div>
 
     <div class="modal-overlay" id="modal-cobro">
         <div class="modal-content">
-            <h2 style="margin-top:0; color:var(--primary);" id="cobro-titulo-mesa">Cobrar Ticket</h2>
-            <div style="font-size: 1.5em; color: #555;">Total a pagar:</div>
-            <div style="font-size: 2.5em; font-weight: 900; color: #222; margin-bottom: 10px;" id="cobro-total-txt">$0.00</div>
+            <h2 style="margin-top:0; color:var(--primary); font-size: 1.8em; letter-spacing: -1px;" id="cobro-titulo-mesa">Cobrar Ticket</h2>
+            <div style="font-size: 1.2em; color: #666; font-weight: bold; margin-bottom: 5px;">Total a pagar:</div>
+            <div style="font-size: 3em; font-weight: 900; color: #222; margin-bottom: 20px; line-height: 1;" id="cobro-total-txt">$0.00</div>
             
-            <label style="font-weight:bold; color:#777;">¿Con cuánto paga el cliente? <span style="color:var(--primary); font-size:0.8em;">(Opcional)</span></label>
-            <input type="number" id="input-recibido" class="cobro-input" placeholder="Ej. 500" oninput="calcularCambio()">
+            <label style="font-weight:bold; color:#777; font-size: 0.95em;">Efectivo recibido <span style="color:var(--primary);">(Opcional)</span></label>
+            <input type="number" id="input-recibido" class="cobro-input" placeholder="$0.00" oninput="calcularCambio()">
             
-            <label style="font-weight:bold; color:#777;">Cambio a entregar:</label>
+            <label style="font-weight:bold; color:#777; font-size: 0.95em;">Cambio a entregar:</label>
             <div class="cobro-cambio" id="texto-cambio">Cobro Exacto</div>
 
-            <button class="btn-accion btn-entregar" id="btn-confirmar-pago" onclick="procesarPagoFinal()">✅ Confirmar y Enviar a Cocina</button>
-            <button class="btn-cancelar" onclick="cerrarModalCobro()">Cancelar</button>
+            <button class="btn-accion btn-entregar" id="btn-confirmar-pago" onclick="procesarPagoFinal()">Confirmar y Enviar a Cocina</button>
+            <button class="btn-cancelar" onclick="cerrarModalCobro()">Cancelar Operación</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-alerta" style="z-index: 9999;">
-        <div class="modal-content" style="max-width: 320px; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-            <div id="alerta-icono" style="font-size: 4em; margin-bottom: 5px;">⚠️</div>
-            <h2 id="alerta-titulo" style="margin-top: 0; color: #222;">Título</h2>
-            <p id="alerta-mensaje" style="color: #666; font-size: 1.1em; line-height: 1.4; margin-bottom: 25px;">Mensaje</p>
-            <div id="alerta-botones" style="display: flex; gap: 10px;"></div>
+        <div class="modal-content" style="max-width: 350px;">
+            <div id="alerta-icono" style="font-size: 4em; margin-bottom: 10px; line-height: 1;">⚠️</div>
+            <h2 id="alerta-titulo" style="margin-top: 0; color: #222; font-size: 1.6em;">Título</h2>
+            <p id="alerta-mensaje" style="color: #666; font-size: 1.1em; line-height: 1.5; margin-bottom: 30px;">Mensaje</p>
+            <div id="alerta-botones" style="display: flex; gap: 12px;"></div>
         </div>
     </div>
 
@@ -165,7 +206,7 @@
                 document.getElementById('alerta-icono').innerText = icono;
                 document.getElementById('alerta-titulo').innerText = titulo;
                 document.getElementById('alerta-mensaje').innerText = mensaje;
-                document.getElementById('alerta-botones').innerHTML = `<button class="btn-mitad" style="background:var(--primary); color:white;" id="btn-alerta-ok">Aceptar</button>`;
+                document.getElementById('alerta-botones').innerHTML = `<button class="btn-mitad" style="background:var(--primary); color:white;" id="btn-alerta-ok">Entendido</button>`;
                 document.getElementById('modal-alerta').style.display = 'flex';
                 document.getElementById('btn-alerta-ok').onclick = () => { document.getElementById('modal-alerta').style.display = 'none'; resolve(true); };
             });
@@ -213,8 +254,8 @@
                 if (docSnap.exists()) { restauranteAbierto = docSnap.data().abierto; } 
                 else { setDoc(docConfig, { abierto: true }); restauranteAbierto = true; }
                 const btnEstado = document.getElementById('btn-estado-tienda');
-                if(restauranteAbierto) { btnEstado.innerText = "🟢 RECIBIENDO ÓRDENES"; btnEstado.style.background = "var(--success)"; } 
-                else { btnEstado.innerText = "🔴 RESTAURANTE CERRADO"; btnEstado.style.background = "var(--danger)"; }
+                if(restauranteAbierto) { btnEstado.innerText = "RECIBIENDO ÓRDENES"; btnEstado.style.background = "var(--success)"; } 
+                else { btnEstado.innerText = "RESTAURANTE CERRADO"; btnEstado.style.background = "var(--danger)"; }
             });
         }
         document.getElementById('btn-estado-tienda').onclick = async () => {
@@ -269,77 +310,127 @@
         let cantidadCocinaAnterior = 0;
         let datosCobroActual = { id: '', total: 0, ticket: 0 }; 
 
-        function escucharPendientesCaja() {
+                function escucharPendientesCaja() {
             const q = query(collection(db, "ordenes"), where("estado", "==", "por_pagar"));
             onSnapshot(q, (snapshot) => {
                 let htmlCaja = ''; 
                 let contadorCaja = 0;
 
-                snapshot.forEach((docSnap) => {
+                // 1. Convertimos los resultados a un arreglo para poder ordenarlos
+                let ordenesArray = [];
+                snapshot.forEach(docSnap => {
+                    let data = docSnap.data();
+                    data.id = docSnap.id;
+                    ordenesArray.push(data);
+                });
+
+                // 2. Ordenar cronológicamente: Los más viejos (los que llevan más tiempo esperando) arriba
+                ordenesArray.sort((a, b) => {
+                    let timeA = a.fecha ? a.fecha.toMillis() : Date.now();
+                    let timeB = b.fecha ? b.fecha.toMillis() : Date.now();
+                    return timeA - timeB;
+                });
+
+                // 3. Generar el HTML ya con el orden correcto
+                ordenesArray.forEach((o) => {
                     contadorCaja++;
-                    const o = docSnap.data(); const id = docSnap.id;
+                    const id = o.id;
                     let horaTexto = (o.fecha && o.fecha.toDate) ? o.fecha.toDate().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true }) : "Reciente";
 
                     let itemsHtml = '';
                     o.items.forEach(item => { 
                         let subtotal = item.cantidad * parseFloat(item.precioUnitario);
-                        itemsHtml += `<div class="item-pedido" style="align-items: center;"><div class="item-cant">${item.cantidad}x</div><div class="item-detalle" style="font-size: 0.9em; font-weight: normal;">${item.nombre} ${item.tamaño?`(${item.tamaño})`:''}</div><div class="item-precio">$${subtotal}</div></div>`; 
+                        itemsHtml += `<div class="item-pedido"><div class="item-cant">${item.cantidad}x</div><div class="item-detalle">${item.nombre} ${item.tamaño?`<span class="item-tam">${item.tamaño}</span>`:''}</div><div class="item-precio">$${subtotal}</div></div>`; 
                     });
 
                     htmlCaja += `
                         <div class="card">
                             <div class="card-header">
                                 <h2 class="card-mesa">TICKET #${o.ticket}</h2>
-                                <span class="card-hora">🕒 ${horaTexto}</span>
+                                <span class="card-hora">${horaTexto}</span>
                             </div>
                             <div class="card-lista">${itemsHtml}</div>
                             <div class="card-footer">
                                 <div class="card-total">A COBRAR: $${parseFloat(o.total).toFixed(2)}</div>
-                                <button class="btn-accion btn-cobrar" onclick='abrirModalCobro("${id}", ${o.ticket}, ${o.total})'>💵 Cobrar y Mandar a Cocina</button>
-                                <button class="btn-borrar" onclick="borrarTicketFalso('${id}', ${o.ticket})">🗑️ Borrar Orden Fantasma</button>
+                                <button class="btn-accion btn-cobrar" onclick='abrirModalCobro("${id}", ${o.ticket}, ${o.total})'>Cobrar y a Cocina</button>
+                                <button class="btn-borrar" onclick="borrarTicketFalso('${id}', ${o.ticket})">Borrar Orden Fantasma</button>
                             </div>
                         </div>`;
                 });
 
-                document.getElementById('contenedor-caja').innerHTML = htmlCaja || '<div class="sin-datos">No hay clientes por pagar.</div>';
+                document.getElementById('contenedor-caja').innerHTML = htmlCaja || '<div class="sin-datos">No hay clientes en fila de pago.</div>';
                 
+                // Efecto de sonido si llega una orden nueva
                 if (contadorCaja > cantidadCajaAnterior && cantidadCajaAnterior !== 0) document.getElementById('audio-notificacion').play().catch(()=>{});
                 cantidadCajaAnterior = contadorCaja;
             });
         }
+
 
         function escucharEnCocina() {
             const q = query(collection(db, "ordenes"), where("estado", "==", "en_cocina"));
             onSnapshot(q, (snapshot) => {
                 let htmlCocina = ''; 
                 let contadorCocina = 0;
+                
+                let ordenesArray = [];
+                snapshot.forEach(docSnap => {
+                    let data = docSnap.data();
+                    data.id = docSnap.id;
+                    ordenesArray.push(data);
+                });
 
-                snapshot.forEach((docSnap) => {
+                // Ordenar: Las más viejas primero (las que pagaron hace más tiempo)
+                ordenesArray.sort((a, b) => {
+                    let timeA = a.fechaPago ? a.fechaPago.toMillis() : (a.fecha ? a.fecha.toMillis() : Date.now());
+                    let timeB = b.fechaPago ? b.fechaPago.toMillis() : (b.fecha ? b.fecha.toMillis() : Date.now());
+                    return timeA - timeB;
+                });
+
+                ordenesArray.forEach((o, index) => {
                     contadorCocina++;
-                    const o = docSnap.data(); const id = docSnap.id;
-                    let horaTexto = (o.fecha && o.fecha.toDate) ? o.fecha.toDate().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true }) : "Reciente";
+                    let horaTexto = (o.fechaPago && o.fechaPago.toDate) ? o.fechaPago.toDate().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true }) : "Reciente";
 
                     let itemsHtml = '';
                     o.items.forEach(item => { 
-                        let txtCat = item.categoria ? `<span style="font-size:0.7em; color:var(--primary); display:block; line-height:1; margin-bottom:2px;">${item.categoria}</span>` : '';
-                        itemsHtml += `<div class="item-pedido"><div class="item-cant">${item.cantidad}x</div><div class="item-detalle">${txtCat}${item.nombre} ${item.tamaño?`<span class="item-tam">▶ ${item.tamaño}</span>`:''}</div></div>`; 
+                        let txtCat = item.categoria ? `<span style="font-size:0.7em; color:#e53935; display:block; line-height:1; margin-bottom:2px; font-weight:800; text-transform:uppercase;">${item.categoria}</span>` : '';
+                        itemsHtml += `<div class="item-pedido"><div class="item-cant" style="color: #222;">${item.cantidad}x</div><div class="item-detalle">${txtCat}${item.nombre} ${item.tamaño?`<span class="item-tam">▶ ${item.tamaño}</span>`:''}</div></div>`; 
                     });
 
-                    htmlCocina += `
-                        <div class="card">
-                            <div class="card-header cocina-header">
-                                <h2 class="card-mesa">TICKET #${o.ticket}</h2>
-                                <span class="card-hora">🕒 ${horaTexto}</span>
-                            </div>
-                            <div class="card-lista">${itemsHtml}</div>
-                            <div class="card-footer">
-                                <button class="btn-accion btn-entregar" onclick="marcarEntregado('${id}')">✅ Marcar como Listo / Entregado</button>
-                            </div>
-                        </div>`;
+                    if (index === 0) {
+                        // LA PRIMERA ORDEN: GRANDE Y COMPLETA
+                        htmlCocina += `
+                            <div class="card main-order">
+                                <div class="card-header cocina-header">
+                                    <div style="display:flex; flex-direction:column;">
+                                        <span style="font-size: 0.85em; font-weight: bold; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-bottom: 2px;">🔥 Preparando Ahora</span>
+                                        <h2 class="card-mesa">TICKET #${o.ticket}</h2>
+                                    </div>
+                                    <span class="card-hora">${horaTexto}</span>
+                                </div>
+                                <div class="card-lista">${itemsHtml}</div>
+                                <div class="card-footer">
+                                    <button class="btn-accion btn-entregar" onclick="marcarEntregado('${o.id}')">✅ Marcar como Listo / Entregado</button>
+                                </div>
+                            </div>`;
+                    } else {
+                        // LAS ÓRDENES EN COLA: PEQUEÑAS Y OCULTAS
+                        htmlCocina += `
+                            <div class="card compact-order" onclick="this.classList.toggle('expanded')">
+                                <div class="card-header cocina-header">
+                                    <h2 class="card-mesa">TICKET #${o.ticket}</h2>
+                                    <span class="card-hora">⏱️ En Cola</span>
+                                </div>
+                                <div class="card-lista">${itemsHtml}</div>
+                                <div class="card-footer">
+                                    <button class="btn-accion btn-entregar" onclick="event.stopPropagation(); marcarEntregado('${o.id}')">✅ Marcar Entregado</button>
+                                </div>
+                            </div>`;
+                    }
                 });
 
                 document.getElementById('contador-cocina').innerText = contadorCocina;
-                document.getElementById('contenedor-cocina').innerHTML = htmlCocina || '<div class="sin-datos">Cocina despejada.</div>';
+                document.getElementById('contenedor-cocina').innerHTML = htmlCocina || '<div class="sin-datos">Cocina despejada. Buen trabajo 👨‍🍳</div>';
                 
                 if (contadorCocina > cantidadCocinaAnterior && cantidadCocinaAnterior !== 0) document.getElementById('audio-notificacion').play().catch(()=>{});
                 cantidadCocinaAnterior = contadorCocina;
@@ -347,7 +438,7 @@
         }
 
         window.borrarTicketFalso = async (id, numTicket) => {
-            const conf = await mostrarConfirmacion("¿Borrar Orden?", `¿Estás seguro de borrar la Orden #${numTicket}? Esto no se puede deshacer y no contará en tus ventas.`, "Sí, borrarla", "🗑️", "var(--danger)");
+            const conf = await mostrarConfirmacion("¿Borrar Orden?", `¿Estás seguro de borrar el Ticket #${numTicket}? Esto no se puede deshacer y no contará en tus ventas.`, "Sí, borrar", "🗑️", "var(--danger)");
             if(conf) {
                 try { await deleteDoc(doc(db, "ordenes", id)); } 
                 catch (error) { await mostrarAlerta("Error", "Hubo un problema al borrar.", "❌"); }
@@ -370,7 +461,7 @@
             
             document.getElementById('input-recibido').value = '';
             document.getElementById('texto-cambio').innerText = 'Cobro Exacto';
-            document.getElementById('texto-cambio').style.color = '#888';
+            document.getElementById('texto-cambio').style.color = '#aaa';
             document.getElementById('btn-confirmar-pago').disabled = false;
             
             document.getElementById('modal-cobro').style.display = 'flex';
@@ -386,7 +477,7 @@
 
             if (inputVal === '') {
                 txt.innerText = 'Cobro Exacto';
-                txt.style.color = '#888';
+                txt.style.color = '#aaa';
                 btn.disabled = false;
                 return;
             }
@@ -415,7 +506,7 @@
                 await batch.commit();
                 cerrarModalCobro();
             } catch(e) { await mostrarAlerta("Error", "Problema de conexión al procesar el pago.", "📡"); console.error(e); } 
-            finally { btn.innerText = "✅ Confirmar y Enviar a Cocina"; }
+            finally { btn.innerText = "Confirmar y Enviar a Cocina"; }
         };
     </script>
 </body>
