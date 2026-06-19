@@ -273,14 +273,14 @@
                         document.getElementById('vista-dashboard').style.display = 'none';
                     }
                 } else {
-                    setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 5000, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0 });
+                    setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 500, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0 });
                 }
             });
         }
 
         window.abrirTurno = async () => {
             let fondo = parseFloat(document.getElementById('input-fondo').value) || 0;
-            let limite = parseFloat(document.getElementById('input-limite').value) || 5000;
+            let limite = parseFloat(document.getElementById('input-limite').value) || 500;
             
             const conf = await mostrarConfirmacion("¿Iniciar Turno?", `Iniciando turno para el día <b>${diaActualDeteccion}</b>.<br><br>Fondo de caja: $${fondo}<br>Límite: $${limite}`, "Abrir Caja", "🔓", "var(--success)");
             if(conf) {
@@ -317,7 +317,7 @@
                     
                     // Tu código de reinicio de caja sigue aquí igual...
                     
-                    await setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 5000, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0 });
+                    await setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 500, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0 });
                     await mostrarAlerta("Corte Exitoso", "Retira todo el dinero. El sistema está bloqueado hasta el siguiente turno.", "✅");
                 } catch(e) { await mostrarAlerta("Error", "No se pudo hacer el corte.", "❌"); }
             }
