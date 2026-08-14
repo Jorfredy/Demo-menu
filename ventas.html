@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Ventas y Caja</title>
+    <style>
+        :root { --primary: #e65100; --bg: #f4f6f8; --text: #333; --success: #2e7d32; --danger: #e53935; --dark: #1a1a1a;}
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: #f4f6f8; color: #333; display: none; }
+        
+        header { background-color: #000; color: white; padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100;}
+        header h1 { margin: 0; font-size: 1.6em; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 900;}
+        
+        .nav-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 15px;}
+        .btn-navegar { background: #222; border: 1px solid #333; color: #aaa; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; text-decoration: none; transition: all 0.2s ease; font-size: 0.95em;}
+        .btn-navegar:hover { background: #333; color: white; border-color: #444;}
+        .btn-navegar.active { background: var(--primary); border-color: var(--primary); color: white; pointer-events: none; box-shadow: 0 4px 10px rgba(230, 81, 0, 0.3);}
+        .btn-salir { background: rgba(255,255,255,0.1); border: 1px solid #555; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+        .card-estado-caja { background: white; padding: 25px 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; margin-bottom: 25px; }
+        .input-caja { font-size: 2em; padding: 10px; width: 150px; text-align: center; border: 2px solid #ccc; border-radius: 8px; font-weight: bold; margin-bottom: 10px;}
+        .btn-abrir-caja { background: var(--success); color: white; border: none; padding: 15px 30px; font-size: 1.3em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(46,125,50,0.3);}
+        .box-dia-auto { background: #fff3e0; color: var(--primary); border: 2px dashed #ffb74d; padding: 8px 16px; border-radius: 8px; font-size: 1.2em; font-weight: 900; display: inline-block; margin-bottom: 15px; text-transform: uppercase;}
+
+        .corte-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; border-left: 5px solid var(--success); box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px;}
+        .btn-corte { background: var(--danger); color: white; border: none; padding: 10px 20px; font-weight: bold; font-size: 1.1em; border-radius: 6px; cursor: pointer;}
+        .btn-corte:active { transform: scale(0.95); }
+
+        .btn-reset-tickets { 
+            background: #333; color: #ffca28; border: 1px solid #ffca28; padding: 10px 20px; 
+            font-weight: bold; font-size: 0.95em; border-radius: 6px; cursor: pointer; 
+            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: none; transition: all 0.2s ease;
+        }
+        .btn-reset-tickets:active { background: #ffca28; color: #000; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #ddd; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: pan-y; cursor: pointer; transition: 0.2s;}
+        .stat-card:active { transform: scale(0.98); background: #fdfdfd; }
+        .stat-card h3 { margin: 0; color: #777; font-size: 0.9em; text-transform: uppercase; pointer-events: none;}
+        .stat-value { font-size: 2.2em; font-weight: 900; color: #222; margin: 10px 0; pointer-events: none;}
+        .stat-card.caja { border-color: var(--success); }
+        .stat-card.caja .stat-value { color: var(--success); }
+
+        /* NAVEGADOR DEL TIEMPO (HISTORIAL) */
+        .filtros-historial { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .btn-filtro { background: white; border: 2px solid #ddd; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; color: #555; transition: 0.2s;}
+        .btn-filtro.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 6px rgba(230,81,0,0.3);}
+        
+        .nav-fechas { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .btn-nav-fecha { background: #eee; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; color: #333; transition: 0.2s;}
+        .btn-nav-fecha:hover { background: #ddd; }
+        .btn-nav-fecha:disabled { opacity: 0.3; cursor: not-allowed; }
+        .txt-rango-fecha { font-size: 1.2em; font-weight: 900; color: var(--primary); min-width: 250px; text-align: center; text-transform: capitalize;}
+
+        .tabla-productos { width: 100%; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-collapse: collapse; margin-bottom: 15px;}
+        .tabla-productos th, .tabla-productos td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        .tabla-productos th { background: #fafafa; color: #555; font-weight: bold; text-transform: uppercase; font-size: 0.9em; }
+        
+        .fila-historial { 
+            transition: 0.3s ease; 
+            cursor: pointer; 
+            user-select: none; 
+            -webkit-user-select: none; 
+            -webkit-touch-callout: none; 
+            -webkit-tap-highlight-color: transparent; 
+            touch-action: pan-y; 
+        }
+        .fila-historial.pressing { background-color: rgba(230, 81, 0, 0.1) !important; }
+
+        .footer-total { background: #222; color: white; padding: 20px; text-align: right; border-radius: 12px; font-size: 1.5em; font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
+
+        /* MODALES PERSONALIZADOS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: white; color: #333; width: 90%; max-width: 400px; border-radius: 12px; padding: 25px; box-sizing: border-box; text-align: center;}
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .btn-mitad { flex: 1; padding: 12px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; flex-direction: column;">
+            <div class="nav-bar">
+			    <a href="index.html" class="btn-navegar">Regresar Al Menu</a>
+                <a href="ordenes.html" class="btn-navegar">Órdenes y Caja</a>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap: 15px; flex-wrap: wrap; justify-content: flex-end;">
+            <button class="btn-salir" id="btn-cerrar-sesion">Salir</button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- SECCIÓN ESTADO DE CAJA (ABIERTA / CERRADA) -->
+        <div id="seccion-caja-estado">
+            <div id="vista-caja-cerrada" class="card-estado-caja" style="display:none;">
+                <h2 style="color:var(--danger); margin-top:0;">CAJA CERRADA</h2>
+                <p style="font-size: 1.1em; color: #666; margin-bottom: 15px;">Inicia el turno para procesar pagos en la caja.</p>
+                <div style="margin-bottom: 5px; font-weight: bold; color:#888; font-size: 0.85em;">Día detectado:</div>
+                <div class="box-dia-auto" id="txt-dia-auto">Cargando día...</div>
+                
+                <div style="display:flex; justify-content:center; gap: 30px; flex-wrap: wrap; margin-top: 10px;">
+                    <div>
+                        <div style="font-weight:bold; color:#888; margin-bottom:5px; font-size: 0.9em;">Límite Seguridad:</div>
+                        <span style="font-size:1.8em; font-weight:bold; color:#ccc;">$</span> <input type="number" id="input-limite" class="input-caja" value="500">
+                    </div>
+                </div>
+
+                <button class="btn-abrir-caja" onclick="abrirTurno()">🔓 INICIAR TURNO DE HOY</button>
+            </div>
+
+            <div id="vista-caja-abierta" style="display:none;">
+                <div class="corte-header">
+                    <div>
+                        <h2 style="margin:0; color:var(--success);">Turno Activo</h2>
+                        <div style="color:#777; font-size:0.9em; margin-top:5px;" id="txt-fecha-apertura">Abierto: --:--</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn-reset-tickets" id="btn-reset-ticket-counter">🔄 Reiniciar Tickets (Mantén 3s)</button>
+                        <button class="btn-corte" onclick="hacerCorteDeCaja()">🔒 Hacer Corte y Cerrar Turno</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card" id="card-ventas">
+                        <h3>Ventas del Turno</h3>
+                        <div class="stat-value" id="txt-ventas-turno">$0</div>
+                    </div>
+                    <div class="stat-card" id="card-retiros" style="border-color: #e53935;">
+                        <h3>Retiros Realizados</h3>
+                        <div class="stat-value" id="txt-retiros-turno" style="color:#e53935;">$0</div>
+                    </div>
+                    <div class="stat-card" id="card-pagos" style="border-color: #ff9800;">
+                        <h3>Pagos / Gastos</h3>
+                        <div class="stat-value" id="txt-pagos-turno" style="color:#ff9800;">$0</div>
+                    </div>
+                    <div class="stat-card caja" id="card-efectivo">
+                        <h3>Efectivo Físico en Caja</h3>
+                        <div class="stat-value" id="txt-efectivo-real">$0</div>
+                        <div style="font-size:0.85em; color:#888;">(Ventas - Retiros - Pagos)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SECCIÓN REGISTRO HISTÓRICO SIEMPRE VISIBLE -->
+        <h2 style="color:var(--primary); border-bottom:2px solid #ccc; padding-bottom:5px; margin-top: 30px; text-align: center;"> REGISTRO HISTÓRICO DE VENTAS</h2>
+        
+        <div style="text-align: center; margin-bottom: 25px;">
+            <button onclick="exportarAExcel()" class="btn-navegar" style="background-color: #2e7d32; border-color: #1e7e34; color: white; padding: 10px 25px; font-size: 1em; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  Exportar este Periodo a Hoja de Cálculo
+            </button>
+        </div>
+        
+        <div class="filtros-historial">
+            <button class="btn-filtro active" id="btn-filtro-dia" onclick="cambiarFiltro('dia')">Por Día</button>
+            <button class="btn-filtro" id="btn-filtro-semana" onclick="cambiarFiltro('semana')">Por Semana</button>
+            <button class="btn-filtro" id="btn-filtro-mes" onclick="cambiarFiltro('mes')">Por Mes</button>
+        </div>
+
+        <div class="nav-fechas">
+            <button class="btn-nav-fecha" onclick="cambiarFecha(-1)">◀ Ver Pasado</button>
+            <div class="txt-rango-fecha" id="txt-rango-fecha">Hoy</div>
+            <button class="btn-nav-fecha" id="btn-nav-next" onclick="cambiarFecha(1)" disabled>Ver Reciente ▶</button>
+        </div>
+
+        <table class="tabla-productos" style="margin-bottom: 35px;">
+            <thead id="tabla-header-dinamico">
+                <tr style="background-color: #fafafa;">
+                    <th style="width: 100px; text-align: center;">Hora</th>
+                    <th style="width: 150px;">Tipo</th>
+                    <th>Concepto / Detalle</th>
+                    <th style="text-align: right; width: 120px;">Monto</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-maquina-tiempo-cuerpo">
+                <tr><td colspan="4" style="text-align:center; padding: 15px; color: #999;">Selecciona una fecha para cargar movimientos.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="footer-total">
+            <span style="font-size:0.6em; color:#aaa; font-weight:normal; text-transform:uppercase;">Ganancia en este periodo:</span>
+            <span style="color:var(--success);" id="txt-total-historico">$0.00</span>
+        </div>
+
+    </div>
+
+    <!-- MODALES OCULTOS DE EDICIÓN EN CALIENTE -->
+    
+    <div class="modal-overlay" id="modal-editar-stat" style="z-index: 300;">
+        <div class="modal-content" style="animation: popIn 0.3s ease-out;">
+            <h2 style="margin-top:0; color:var(--primary);" id="titulo-editar-stat">Ajuste Manual</h2>
+            <p style="color:#666; font-weight: bold; font-size: 1.1em;">Ingresa el nuevo valor para <br><span id="nombre-stat-edit" style="color: #222;"></span>:</p>
+            <input type="number" id="input-nuevo-stat" class="input-caja" style="width: 80%; margin: 15px auto;">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-mitad" style="background:#eee; color:#555;" onclick="cerrarEditarStat()">Cancelar</button>
+                <button class="btn-mitad" style="background:var(--success); color:white;" onclick="guardarStatEditado()">Guardar Ajuste</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-editar-mov" style="z-index: 300;">
+        <div class="modal-content" style="animation: popIn 0.3s ease-out;">
+            <h2 style="margin-top:0; color:var(--primary);">Ajuste de Registro</h2>
+            
+            <label style="display:block; text-align:left; font-weight:bold; color:#555;">Concepto / Producto:</label>
+            <input type="text" id="input-edit-mov-concepto" style="width:100%; padding:12px; margin:5px 0 15px; box-sizing: border-box; border-radius:5px; border:2px solid #ddd; font-size:1em;">
+            
+            <label style="display:block; text-align:left; font-weight:bold; color:#555;">Monto ($):</label>
+            <input type="number" id="input-edit-mov-monto" style="width:100%; padding:12px; margin:5px 0 20px; box-sizing: border-box; border-radius:5px; border:2px solid #ddd; font-size:1.2em; font-weight: bold;">
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn-mitad" style="background:#eee; color:#555;" onclick="cerrarEditarMov()">Cancelar</button>
+                <button class="btn-mitad" style="background:var(--success); color:white;" onclick="guardarMovimiento()">Guardar</button>
+            </div>
+            <button style="width:100%; padding:14px; background:#fff0f0; color:var(--danger); border:1px solid #ffcdd2; font-weight:bold; border-radius:8px; cursor:pointer;" onclick="eliminarMovimiento()">🗑️ Eliminar Registro Completo</button>
+        </div>
+    </div>
+
+    <!-- ALERTA GLOBAL -->
+    <div class="modal-overlay" id="modal-alerta" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 350px; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <div id="alerta-icono" style="font-size: 4em; margin-bottom: 5px;">⚠️</div>
+            <h2 id="alerta-titulo" style="margin-top: 0; color: #222;">Título</h2>
+            <p id="alerta-mensaje" style="color: #666; font-size: 1.1em; line-height: 1.4; margin-bottom: 25px;">Mensaje</p>
+            <div id="alerta-botones" style="display: flex; gap: 10px;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, onSnapshot, doc, setDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAc_eCxcvIJKFclNMApr9_fVDCDLShTLK8",
+            authDomain: "menu-pho88-demo.firebaseapp.com",
+            projectId: "menu-pho88-demo",
+            storageBucket: "menu-pho88-demo.firebasestorage.app",
+            messagingSenderId: "100888777359",
+            appId: "1:100888777359:web:5f2946bebba884858216fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- SISTEMA DE DIÁLOGOS ---
+        window.mostrarAlerta = (titulo, mensaje, icono = 'ℹ️') => {
+            return new Promise((resolve) => {
+                document.getElementById('alerta-icono').innerText = icono;
+                document.getElementById('alerta-titulo').innerText = titulo;
+                document.getElementById('alerta-mensaje').innerText = mensaje;
+                document.getElementById('alerta-botones').innerHTML = `<button class="btn-mitad" style="background:var(--primary); color:white;" id="btn-alerta-ok">Aceptar</button>`;
+                document.getElementById('modal-alerta').style.display = 'flex';
+                document.getElementById('btn-alerta-ok').onclick = () => { document.getElementById('modal-alerta').style.display = 'none'; resolve(true); };
+            });
+        };
+
+        window.mostrarConfirmacion = (titulo, mensaje, txtBtn = "Aceptar", icono = '❓', color = "var(--primary)") => {
+            return new Promise((resolve) => {
+                document.getElementById('alerta-icono').innerText = icono;
+                document.getElementById('alerta-titulo').innerText = titulo;
+                document.getElementById('alerta-mensaje').innerHTML = mensaje;
+                document.getElementById('alerta-botones').innerHTML = `
+                    <button class="btn-mitad" style="background:#eee; color:#555;" id="btn-alerta-cancelar">Cancelar</button>
+                    <button class="btn-mitad" style="background:${color}; color:white;" id="btn-alerta-confirmar">${txtBtn}</button>
+                `;
+                document.getElementById('modal-alerta').style.display = 'flex';
+                document.getElementById('btn-alerta-cancelar').onclick = () => { document.getElementById('modal-alerta').style.display = 'none'; resolve(false); };
+                document.getElementById('btn-alerta-confirmar').onclick = () => { document.getElementById('modal-alerta').style.display = 'none'; resolve(true); };
+            });
+        };
+
+        // --- FUNCIONES OCULTAS DE EDICIÓN DE CAJA (5 SEGUNDOS) ---
+        function bindLongPressStats(elementId, callback) {
+            const el = document.getElementById(elementId);
+            if(!el) return;
+            let timer;
+            let isPressing = false;
+            
+            const cancel = () => { clearTimeout(timer); isPressing = false; el.style.opacity = '1'; };
+
+            el.addEventListener('pointerdown', (e) => {
+                isPressing = true;
+                el.style.opacity = '0.5';
+                timer = setTimeout(() => {
+                    if(isPressing) { el.style.opacity = '1'; callback(); }
+                }, 5000); 
+            });
+
+            el.addEventListener('pointerup', cancel);
+            el.addEventListener('pointerleave', cancel);
+            el.addEventListener('pointercancel', cancel);
+            el.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        let statEditInfo = null;
+        window.abrirEditarStat = (campo, nombre, valorActual) => {
+            statEditInfo = { campo };
+            document.getElementById('titulo-editar-stat').innerText = "Ajuste de " + nombre;
+            document.getElementById('nombre-stat-edit').innerText = nombre;
+            document.getElementById('input-nuevo-stat').value = valorActual;
+            document.getElementById('modal-editar-stat').style.display = 'flex';
+            setTimeout(() => document.getElementById('input-nuevo-stat').focus(), 100);
+        };
+        window.cerrarEditarStat = () => { document.getElementById('modal-editar-stat').style.display = 'none'; statEditInfo = null; };
+        
+        window.guardarStatEditado = async () => {
+            let val = parseFloat(document.getElementById('input-nuevo-stat').value);
+            if(isNaN(val)) return;
+            try {
+                await updateDoc(docCaja, { [statEditInfo.campo]: val });
+                cerrarEditarStat();
+                mostrarAlerta("Actualizado", "El valor ha sido forzado correctamente en la caja.", "✅");
+            } catch(e) { mostrarAlerta("Error", "Fallo al ajustar el parámetro.", "❌"); }
+        };
+
+        // --- FUNCIONES OCULTAS DE EDICIÓN DE FILAS (2.5 SEGUNDOS) ---
+        let currentEditMov = null;
+        
+        window.iniciarPressFila = (elem, id, coleccion, concepto, monto, esNegativo, tipoRetiro) => {
+            elem.classList.add('pressing');
+            window.rowTimer = setTimeout(() => {
+                elem.classList.remove('pressing');
+                currentEditMov = { id, coleccion, concepto, montoOriginal: monto, esNegativo, tipoRetiro };
+                document.getElementById('input-edit-mov-concepto').value = concepto;
+                document.getElementById('input-edit-mov-monto').value = monto;
+                document.getElementById('modal-editar-mov').style.display = 'flex';
+            }, 2500); 
+        };
+        
+        window.cancelarPressFila = (elem) => {
+            if(elem) elem.classList.remove('pressing');
+            clearTimeout(window.rowTimer);
+        };
+
+        window.cerrarEditarMov = () => { document.getElementById('modal-editar-mov').style.display = 'none'; currentEditMov = null; };
+
+        window.guardarMovimiento = async () => {
+            let nuevoConcepto = document.getElementById('input-edit-mov-concepto').value.trim();
+            let nuevoMonto = parseFloat(document.getElementById('input-edit-mov-monto').value);
+            
+            if(isNaN(nuevoMonto)) return;
+
+            try {
+                let diff = nuevoMonto - currentEditMov.montoOriginal;
+                let docUpdates = {};
+                
+                if(currentEditMov.coleccion === 'ordenes') {
+                    docUpdates.total = nuevoMonto;
+                    docUpdates.detalleEditado = nuevoConcepto; 
+                } else {
+                    docUpdates.monto = nuevoMonto;
+                    docUpdates.motivo = nuevoConcepto;
+                }
+
+                await updateDoc(doc(db, currentEditMov.coleccion, currentEditMov.id), docUpdates);
+
+                if(cajaActual.estado === 'abierta' && diff !== 0) {
+                    let updatesCaja = {};
+                    if(currentEditMov.coleccion === 'ordenes') {
+                        updatesCaja.ventasTurno = increment(diff);
+                        updatesCaja.efectivoActual = increment(diff);
+                    } else if(currentEditMov.coleccion === 'retiros_historial') {
+                        if(currentEditMov.tipoRetiro === 'pago') updatesCaja.pagosTurno = increment(diff);
+                        else updatesCaja.retirosTurno = increment(diff);
+                        updatesCaja.efectivoActual = increment(-diff);
+                    }
+                    await updateDoc(docCaja, updatesCaja);
+                }
+
+                cerrarEditarMov();
+                cargarHistorialVentas(); 
+            } catch(e) { mostrarAlerta("Error", "Fallo al guardar los cambios.", "❌"); }
+        };
+
+        window.eliminarMovimiento = async () => {
+            if(!currentEditMov) return;
+            const conf = await mostrarConfirmacion("¿Eliminar Registro?", "El monto se <b>restará/ajustará automáticamente</b> del total de tu caja abierta. ¿Proceder a borrar por completo?", "Sí, Eliminar", "🗑️", "var(--danger)");
+            
+            if(conf) {
+                try {
+                    await deleteDoc(doc(db, currentEditMov.coleccion, currentEditMov.id));
+                    
+                    if(cajaActual.estado === 'abierta') {
+                        let updatesCaja = {};
+                        if(currentEditMov.coleccion === 'ordenes') {
+                            updatesCaja.ventasTurno = increment(-currentEditMov.montoOriginal);
+                            updatesCaja.efectivoActual = increment(-currentEditMov.montoOriginal);
+                        } else if(currentEditMov.coleccion === 'retiros_historial') {
+                            if(currentEditMov.tipoRetiro === 'pago') updatesCaja.pagosTurno = increment(-currentEditMov.montoOriginal);
+                            else updatesCaja.retirosTurno = increment(-currentEditMov.montoOriginal);
+                            updatesCaja.efectivoActual = increment(currentEditMov.montoOriginal);
+                        }
+                        await updateDoc(docCaja, updatesCaja);
+                    }
+                    cerrarEditarMov();
+                    cargarHistorialVentas(); 
+                } catch(e) { mostrarAlerta("Error", "Fallo al eliminar el registro de la base de datos.", "❌"); }
+            }
+        };
+
+        // --- SISTEMA DE DÍA AUTOMÁTICO ---
+        const nombresDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const diaActualDeteccion = nombresDias[new Date().getDay()];
+        document.getElementById('txt-dia-auto').innerText = diaActualDeteccion;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { document.body.style.display = "block"; inicializarPanel(); } 
+            else { window.location.href = "index.html"; }
+        });
+        document.getElementById('btn-cerrar-sesion').onclick = () => signOut(auth);
+
+        const docCaja = doc(db, "configuracion", "caja");
+        let cajaActual = {};
+
+        function inicializarPanel() {
+            onSnapshot(docCaja, (docSnap) => {
+                if (docSnap.exists()) {
+                    cajaActual = docSnap.data();
+                    if(cajaActual.estado === 'abierta') {
+                        document.getElementById('vista-caja-cerrada').style.display = 'none';
+                        document.getElementById('vista-caja-abierta').style.display = 'block';
+                        
+                        document.getElementById('txt-ventas-turno').innerText = `$${(cajaActual.ventasTurno||0).toFixed(2)}`;
+                        document.getElementById('txt-efectivo-real').innerText = `$${(cajaActual.efectivoActual||0).toFixed(2)}`;
+                        document.getElementById('txt-retiros-turno').innerText = `-$${(cajaActual.retirosTurno||0).toFixed(2)}`;
+                        document.getElementById('txt-pagos-turno').innerText = `-$${(cajaActual.pagosTurno||0).toFixed(2)}`;
+                        
+                        let d = cajaActual.fechaApertura ? cajaActual.fechaApertura.toDate() : new Date();
+                        document.getElementById('txt-fecha-apertura').innerText = `Abierto el: ${cajaActual.diaSemana || 'Día'} a las ${d.toLocaleTimeString()}`;
+                    } else {
+                        document.getElementById('vista-caja-cerrada').style.display = 'block';
+                        document.getElementById('vista-caja-abierta').style.display = 'none';
+                    }
+                } else {
+                    setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 500, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0 });
+                }
+            });
+
+            setTimeout(() => {
+                bindLongPressStats('card-ventas', () => abrirEditarStat('ventasTurno', 'Ventas del Turno', cajaActual.ventasTurno));
+                bindLongPressStats('card-retiros', () => abrirEditarStat('retirosTurno', 'Retiros Realizados', cajaActual.retirosTurno));
+                bindLongPressStats('card-pagos', () => abrirEditarStat('pagosTurno', 'Pagos / Gastos', cajaActual.pagosTurno));
+                bindLongPressStats('card-efectivo', () => abrirEditarStat('efectivoActual', 'Efectivo Físico Real', cajaActual.efectivoActual));
+            }, 1000);
+
+            cargarHistorialVentas();
+        }
+
+        const btnResetTickets = document.getElementById('btn-reset-ticket-counter');
+        if (btnResetTickets) {
+            btnResetTickets.addEventListener('contextmenu', (e) => e.preventDefault());
+            let ticketResetTimer = null, ticketResetTriggered = false;
+            btnResetTickets.addEventListener('pointerdown', (e) => {
+                ticketResetTriggered = false;
+                btnResetTickets.innerText = "⏳ Mantén presionado... (3s)";
+                ticketResetTimer = setTimeout(async () => {
+                    ticketResetTriggered = true;
+                    btnResetTickets.innerText = "🔄 Reiniciar Tickets (Mantén 3s)";
+                    const conf = await mostrarConfirmacion("¿Reiniciar Contador?", "¿Deseas reiniciar la numeración de tickets para iniciar este nuevo periodo desde el <b>#1</b>?", "Sí, Reiniciar a #1", "🔄", "var(--primary)");
+                    if (conf) {
+                        try {
+                            await setDoc(doc(db, "configuracion", "contador_tickets"), { actual: 0 });
+                            await mostrarAlerta("Contador Reiniciado", "El siguiente ticket generado iniciará en el **#1**.", "✅");
+                        } catch (err) {}
+                    }
+                }, 3000);
+            });
+            const cancelarPresionado = () => { clearTimeout(ticketResetTimer); btnResetTickets.innerText = "🔄 Reiniciar Tickets (Mantén 3s)"; };
+            btnResetTickets.addEventListener('pointerup', cancelarPresionado);
+            btnResetTickets.addEventListener('pointerleave', cancelarPresionado);
+            btnResetTickets.addEventListener('pointercancel', cancelarPresionado);
+        }
+
+        window.abrirTurno = async () => {
+            let fondo = 0; // Se fuerza a 0 como se solicitó
+            let limite = parseFloat(document.getElementById('input-limite').value) || 500;
+            
+            const conf = await mostrarConfirmacion("¿Iniciar Turno?", `Iniciando turno para el día <b>${diaActualDeteccion}</b>.<br>Límite: $${limite}`, "Abrir Caja", "🔓", "var(--success)");
+            if(conf) {
+                try {
+                    await setDoc(docCaja, {
+                        estado: 'abierta', diaSemana: diaActualDeteccion, fondo: fondo, limite: limite,
+                        efectivoActual: fondo, ventasTurno: 0, retirosTurno: 0, pagosTurno: 0, fechaApertura: serverTimestamp()
+                    });
+                } catch(e) {}
+            }
+        };
+
+        window.hacerCorteDeCaja = async () => {
+            const mensaje = `Ventas: <b style="color:var(--success);">+$${cajaActual.ventasTurno.toFixed(2)}</b><br>Retiros: <b style="color:#e53935;">-$${(cajaActual.retirosTurno||0).toFixed(2)}</b><br>Pagos/Gastos: <b style="color:#ff9800;">-$${(cajaActual.pagosTurno||0).toFixed(2)}</b><hr style="border:1px solid #ddd; margin:10px 0;"><span style="font-size:1.2em;">Efectivo Esperado: <b>$${cajaActual.efectivoActual.toFixed(2)}</b></span><br><br>¿Realizar el corte y cerrar la caja?`;
+            const conf = await mostrarConfirmacion("Corte de Caja", mensaje, "Sí, Cerrar Caja", "🔒", "var(--danger)");
+            
+            if(conf) {
+                try {
+                    await addDoc(collection(db, "cortes_caja"), {
+                        diaSemana: cajaActual.diaSemana || 'Desconocido', ventas: cajaActual.ventasTurno, efectivoFinal: cajaActual.efectivoActual,
+                        fondo: cajaActual.fondo || 0, retiros: cajaActual.retirosTurno || 0, pagos: cajaActual.pagosTurno || 0, fechaCierre: serverTimestamp()
+                    });
+                    await setDoc(docCaja, { estado: 'cerrada', fondo: 0, limite: 500, efectivoActual: 0, ventasTurno: 0, retirosTurno: 0, pagosTurno: 0 });
+                    await mostrarAlerta("Corte Exitoso", "Retira el dinero. La caja del día ha sido cerrada.", "✅");
+                } catch(e) {}
+            }
+        };
+
+        let ventasData = [];
+        let filtroTipo = 'dia'; 
+        let offsetFecha = 0;
+
+        async function cargarHistorialVentas() {
+            document.getElementById('tabla-maquina-tiempo-cuerpo').innerHTML = '<tr><td colspan="4" style="text-align:center;">Analizando base de datos en la nube...</td></tr>';
+            try {
+                const q = query(collection(db, "ordenes"), where("estado", "==", "pagada"));
+                const querySnapshot = await getDocs(q);
+                
+                ventasData = [];
+                querySnapshot.forEach((docSnap) => {
+                    let d = docSnap.data();
+                    d.id = docSnap.id;
+                    if(d.fechaPago) ventasData.push(d); 
+                });
+                aplicarFiltroInteligente();
+            } catch(e) { document.getElementById('tabla-maquina-tiempo-cuerpo').innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Error al cargar historial.</td></tr>'; }
+        }
+
+        window.cambiarFiltro = (tipo) => {
+            document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-filtro-' + tipo).classList.add('active');
+            filtroTipo = tipo;
+            offsetFecha = 0;
+            aplicarFiltroInteligente();
+        }
+
+        window.cambiarFecha = (delta) => { offsetFecha += delta; if(offsetFecha > 0) offsetFecha = 0; aplicarFiltroInteligente(); }
+
+        async function aplicarFiltroInteligente() {
+            document.getElementById('btn-nav-next').disabled = (offsetFecha === 0);
+            let fechaInicio = new Date(), fechaFin = new Date(), textoRango = "";
+
+            if (filtroTipo === 'dia') {
+                fechaInicio.setDate(fechaInicio.getDate() + offsetFecha); fechaInicio.setHours(0,0,0,0);
+                fechaFin = new Date(fechaInicio); fechaFin.setHours(23,59,59,999);
+                if (offsetFecha === 0) textoRango = `Hoy (${nombresDias[fechaInicio.getDay()]})`;
+                else if (offsetFecha === -1) textoRango = `Ayer (${nombresDias[fechaInicio.getDay()]})`;
+                else textoRango = `${nombresDias[fechaInicio.getDay()]} ${fechaInicio.getDate()} ${nombresMeses[fechaInicio.getMonth()]}`;
+            } 
+            else if (filtroTipo === 'semana') {
+                let day = fechaInicio.getDay() || 7; 
+                fechaInicio.setDate(fechaInicio.getDate() - day + 1 + (offsetFecha * 7)); fechaInicio.setHours(0,0,0,0);
+                fechaFin = new Date(fechaInicio); fechaFin.setDate(fechaInicio.getDate() + 6); fechaFin.setHours(23,59,59,999);
+                textoRango = `${fechaInicio.getDate()} ${nombresMeses[fechaInicio.getMonth()]} - ${fechaFin.getDate()} ${nombresMeses[fechaFin.getMonth()]}`;
+                if(offsetFecha === 0) textoRango = "Esta Semana (" + textoRango + ")"; else if(offsetFecha === -1) textoRango = "Semana Pasada";
+            }
+            else if (filtroTipo === 'mes') {
+                fechaInicio.setMonth(fechaInicio.getMonth() + offsetFecha, 1); fechaInicio.setHours(0,0,0,0);
+                fechaFin = new Date(fechaInicio); fechaFin.setMonth(fechaInicio.getMonth() + 1, 0); fechaFin.setHours(23,59,59,999);
+                textoRango = `${nombresMeses[fechaInicio.getMonth()]} ${fechaInicio.getFullYear()}`;
+                if(offsetFecha === 0) textoRango = "Este Mes (" + textoRango + ")"; else if(offsetFecha === -1) textoRango = "Mes Pasado (" + textoRango + ")";
+            }
+
+            document.getElementById('txt-rango-fecha').innerText = textoRango;
+
+            let totalVendidoRango = 0;
+            ventasData.forEach(orden => {
+                let fechaOrden = orden.fechaPago.toDate();
+                if(fechaOrden >= fechaInicio && fechaOrden <= fechaFin) totalVendidoRango += parseFloat(orden.total || 0);
+            });
+            document.getElementById('txt-total-historico').innerText = `$${totalVendidoRango.toFixed(2)}`;
+
+            await cargarLineaDelTiempoHistorial(fechaInicio, fechaFin);
+        }
+
+        let movimientosDelDiaGlobal = [];
+        let nombreArchivoGlobal = "Reporte_Ventas";
+
+        window.cargarLineaDelTiempoHistorial = async (fechaInicio, fechaFin) => {
+            movimientosDelDiaGlobal = [];
+            const diasSemanaNombres = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+            let nombreDia = diasSemanaNombres[fechaInicio.getDay()];
+            let dia = String(fechaInicio.getDate()).padStart(2, '0');
+            let mes = String(fechaInicio.getMonth() + 1).padStart(2, '0');
+            let anio = fechaInicio.getFullYear();
+            nombreArchivoGlobal = `Reporte_${nombreDia}_${dia}-${mes}-${anio}`;
+            
+            document.getElementById('tabla-maquina-tiempo-cuerpo').innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#999;">Cargando movimientos...</td></tr>';
+
+            if (filtroTipo === 'dia') {
+                document.getElementById('tabla-header-dinamico').innerHTML = `
+                    <tr style="background-color: #fafafa;">
+                        <th style="width: 100px; text-align: center;">Hora</th>
+                        <th style="width: 150px;">Tipo</th>
+                        <th>Concepto / Detalle</th>
+                        <th style="text-align: right; width: 120px;">Monto</th>
+                    </tr>`;
+
+                ventasData.forEach(orden => {
+                    let fechaOrden = orden.fechaPago.toDate();
+                    if(fechaOrden >= fechaInicio && fechaOrden <= fechaFin) {
+                        const horaFormateada = orden.fechaPago.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        const timestamp = orden.fechaPago.toDate().getTime();
+                        let detalle = orden.detalleEditado ? orden.detalleEditado : (orden.items ? orden.items.map(i => `${i.cantidad}x ${i.nombre}${i.tamaño?` (${i.tamaño})`:''}`).join(', ') : 'Venta General');
+
+                        movimientosDelDiaGlobal.push({
+                            id: orden.id, coleccion: 'ordenes', timestamp: timestamp, hora: horaFormateada,
+                            tipo: 'VENTA ', concepto: detalle, montoOriginal: orden.total || 0,
+                            colorClase: 'color: #2e7d32; font-weight: bold;', esNegativo: false, tipoRetiro: null
+                        });
+                    }
+                });
+
+                try {
+                    const qRetiros = query(collection(db, "retiros_historial"), where("fecha", ">=", fechaInicio), where("fecha", "<=", fechaFin));
+                    const queryRetirosSnap = await getDocs(qRetiros);
+                    queryRetirosSnap.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const horaFormateada = data.fecha ? data.fecha.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
+                        const timestamp = data.fecha ? data.fecha.toDate().getTime() : 0;
+                        
+                        let tipoTexto = 'RETIRO ', colorEstilo = 'color: #c62828; font-weight: bold;';
+                        if(data.tipo === 'pago') { tipoTexto = 'PAGO/GASTO '; colorEstilo = 'color: #ef6c00; font-weight: bold;'; }
+
+                        movimientosDelDiaGlobal.push({
+                            id: docSnap.id, coleccion: 'retiros_historial', timestamp: timestamp, hora: horaFormateada,
+                            tipo: tipoTexto, concepto: data.motivo || 'Movimiento de caja', montoOriginal: data.monto || 0,
+                            colorClase: colorEstilo, esNegativo: true, tipoRetiro: data.tipo
+                        });
+                    });
+                } catch(e) {}
+
+                movimientosDelDiaGlobal.sort((a, b) => a.timestamp - b.timestamp);
+                renderizarTablaMaquinaTiempo();
+
+            } else {
+                document.getElementById('tabla-header-dinamico').innerHTML = `
+                    <tr style="background-color: #fafafa;">
+                        <th style="width: 80px; text-align: center;">Cant.</th>
+                        <th>Producto / Platillo</th>
+                        <th style="width: 150px;">Categoría</th>
+                        <th style="text-align: right; width: 140px;">Total Acumulado</th>
+                    </tr>`;
+
+                let inventarioMap = {};
+                ventasData.forEach(orden => {
+                    let fechaOrden = orden.fechaPago.toDate();
+                    if(fechaOrden >= fechaInicio && fechaOrden <= fechaFin) {
+                        if (orden.items && Array.isArray(orden.items)) {
+                            orden.items.forEach(item => {
+                                let key = `${item.nombre}${item.tamaño ? ` (${item.tamaño})` : ''}`;
+                                if (!inventarioMap[key]) { inventarioMap[key] = { nombre: key, cantidad: 0, total: 0, categoria: item.categoria || 'Menú General' }; }
+                                inventarioMap[key].cantidad += item.cantidad;
+                                inventarioMap[key].total += (item.cantidad * parseFloat(item.precioUnitario || 0));
+                            });
+                        }
+                    }
+                });
+
+                let inventarioArray = Object.values(inventarioMap);
+                inventarioArray.sort((a, b) => b.cantidad - a.cantidad);
+                renderizarTablaInventario(inventarioArray);
+            }
+        };
+
+        function renderizarTablaMaquinaTiempo() {
+            const tablaCuerpo = document.getElementById('tabla-maquina-tiempo-cuerpo');
+            if (movimientosDelDiaGlobal.length === 0) {
+                tablaCuerpo.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#999;">No hay registros en este día.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            movimientosDelDiaGlobal.forEach(m => {
+                const montoTexto = m.esNegativo ? `-$${Math.abs(m.montoOriginal).toFixed(2)}` : `+$${m.montoOriginal.toFixed(2)}`;
+                let trConfig = `class="fila-historial" 
+                                oncontextmenu="event.preventDefault();"
+                                onpointerdown="iniciarPressFila(this, '${m.id}', '${m.coleccion}', '${m.concepto.replace(/'/g, "\\'")}', ${m.montoOriginal}, ${m.esNegativo}, '${m.tipoRetiro}')"
+                                onpointerup="cancelarPressFila(this)" 
+                                onpointerleave="cancelarPressFila(this)" 
+                                onpointercancel="cancelarPressFila(this)"`;
+
+                html += `
+                    <tr ${trConfig}>
+                        <td style="padding: 12px; text-align: center; color: #666; border-bottom: 1px solid #eee;">${m.hora}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; ${m.colorClase}">${m.tipo}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; color: #444; font-size: 0.95em;">${m.concepto}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; ${m.colorClase}">${montoTexto}</td>
+                    </tr>
+                `;
+            });
+            tablaCuerpo.innerHTML = html;
+        }
+
+        function renderizarTablaInventario(listaInventario) {
+            const tablaCuerpo = document.getElementById('tabla-maquina-tiempo-cuerpo');
+            if (listaInventario.length === 0) {
+                tablaCuerpo.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#999;">No hay ventas registradas en este periodo.</td></tr>';
+                return;
+            }
+            let html = '';
+            listaInventario.forEach(item => {
+                html += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; text-align: center; font-weight: 900; color: var(--primary); font-size: 1.1em;">${item.cantidad}x</td>
+                        <td style="padding: 12px; font-weight: bold; color: #222;">${item.nombre}</td>
+                        <td style="padding: 12px; color: #777; font-size: 0.85em; text-transform: uppercase;">${item.categoria}</td>
+                        <td style="padding: 12px; text-align: right; font-weight: bold; color: var(--success); font-size: 1.05em;">$${item.total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            tablaCuerpo.innerHTML = html;
+        }
+
+        window.exportarAExcel = () => {
+            if (document.querySelectorAll('#tabla-maquina-tiempo-cuerpo tr').length === 0) {
+                alert("⚠️ No hay movimientos en este periodo para exportar."); return;
+            }
+            let csvContent = "\uFEFF"; 
+            if (filtroTipo === 'dia') {
+                csvContent += "Hora,Tipo de Movimiento,Concepto / Detalle,Monto\n";
+                movimientosDelDiaGlobal.forEach(m => {
+                    let conceptoLimpio = m.concepto.replace(/"/g, '""');
+                    csvContent += `"${m.hora}","${m.tipo}","${conceptoLimpio}","${m.montoOriginal.toFixed(2)}"\n`;
+                });
+            } else {
+                csvContent += "Cantidad Vendida,Producto / Platillo,Categoria,Total Acumulado\n";
+                const filas = document.querySelectorAll('#tabla-maquina-tiempo-cuerpo tr');
+                filas.forEach(f => {
+                    const cols = f.querySelectorAll('td');
+                    if(cols.length === 4) {
+                        let cant = cols[0].innerText.replace('x',''), prod = cols[1].innerText.replace(/"/g, '""'), cat = cols[2].innerText, tot = cols[3].innerText.replace('$','');
+                        csvContent += `"${cant}","${prod}","${cat}","${tot}"\n`;
+                    }
+                });
+            }
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${nombreArchivoGlobal}.csv`); 
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+    </script>
+</body>
+</html>
